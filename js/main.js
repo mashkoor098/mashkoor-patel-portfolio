@@ -64,29 +64,46 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && modal.classList.contains('active')) closeResumeModal();
 });
 
+
 // ─── Contact Form ───
 function handleFormSubmit(e) {
   e.preventDefault();
-  const btn = e.target.querySelector('.btn-submit-form');
+  const form = e.target;
+  const btn = form.querySelector('.btn-submit-form');
   const success = document.getElementById('formSuccess');
+  const error = document.getElementById('formError');
 
-  // Loading state
+  error.classList.add('d-none');
   btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Sending...';
   btn.disabled = true;
 
-  setTimeout(() => {
-    btn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Sent!';
-    btn.style.background = '#059669';
-    success.classList.remove('d-none');
-    e.target.reset();
-
-    setTimeout(() => {
+  fetch('https://formspree.io/f/xkolzpnw', {   
+    method: 'POST',
+    body: new FormData(form),
+    headers: { 'Accept': 'application/json' }
+  })
+    .then(response => {
+      if (response.ok) {
+        btn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Sent!';
+        btn.style.background = '#059669';
+        success.classList.remove('d-none');
+        form.reset();
+      } else {
+        throw new Error('Form submission failed');
+      }
+    })
+    .catch(() => {
       btn.innerHTML = '<i class="bi bi-send-fill me-2"></i>Send Message';
-      btn.style.background = '';
-      btn.disabled = false;
-      success.classList.add('d-none');
-    }, 4000);
-  }, 1400);
+      error.classList.remove('d-none');
+    })
+    .finally(() => {
+      setTimeout(() => {
+        btn.innerHTML = '<i class="bi bi-send-fill me-2"></i>Send Message';
+        btn.style.background = '';
+        btn.disabled = false;
+        success.classList.add('d-none');
+      }, 4000);
+    });
 }
 
 // ─── Subtle Cursor Glow on Hero (desktop only) ───
